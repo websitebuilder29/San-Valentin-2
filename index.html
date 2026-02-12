@@ -19,7 +19,6 @@
                 </div>
                 <div class="puzzle-board" id="puzzleBoard"></div>
                 
-                <!-- Barra de progreso móvil -->
                 <div class="progress-mobile">
                     <div class="counter">Piezas: <span id="piecesPlaced">0</span>/9</div>
                     <div class="progress-bar">
@@ -34,10 +33,8 @@
                     <span>🔄 Arrástrame</span>
                 </div>
                 
-                <!-- Piezas disponibles -->
                 <div class="pieces-container" id="piecesContainer"></div>
                 
-                <!-- Mensaje de amor (aparece al colocar pieza) -->
                 <div class="love-message" id="loveMessage">
                     <div class="message-icon">💝</div>
                     <div class="message-text" id="messageText">
@@ -52,10 +49,9 @@
                     <span>📸 Foto completa</span>
                 </div>
                 <div class="photo-frame">
-                    <img src="1.jpg" alt="Nosotros" id="referenceImg">
+                    <img src="assets/1.jpg" alt="Nosotros" id="referenceImg">
                 </div>
                 
-                <!-- Pregunta final -->
                 <div class="final-question" id="finalQuestion">
                     <h2>💘 ¿Quieres ser mi San Valentín? 💘</h2>
                     <button class="heart-btn" onclick="celebrar()">
@@ -69,7 +65,6 @@
         </div>
     </div>
 
-    <!-- Toast para frases en móvil -->
     <div class="toast-notification" id="toastNotification">
         <span id="toastMessage"></span>
     </div>

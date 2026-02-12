@@ -1,9 +1,15 @@
-// Configuración
-const RUTA_FOTO = "1.jpg";
+// Configuración para GitHub Pages
+const RUTA_FOTO = "assets/1.jpg"; // ¡CAMBIA ESTO!
 let piezasColocadas = new Array(9).fill(false);
 let piezasData = [];
 
-// FRASES DE AMOR - ¡Personalízalas!
+// Variables para el drag táctil
+let piezaSeleccionada = null;
+let touchOffsetX = 0;
+let touchOffsetY = 0;
+let piezaOriginal = null;
+
+// FRASES DE AMOR
 const frasesAmor = [
     "💕 Desde que te conocí, mi vida tiene colores que no sabía que existían.",
     "💗 Tu sonrisa es mi lugar favorito en el mundo.",
@@ -22,7 +28,6 @@ const frasesAmor = [
     "💕 Si el amor es una locura, no quiero estar cuerdo."
 ];
 
-// Toast para móvil
 function mostrarToast(mensaje) {
     const toast = document.getElementById('toastNotification');
     const toastMessage = document.getElementById('toastMessage');
@@ -34,17 +39,23 @@ function mostrarToast(mensaje) {
     }, 3000);
 }
 
-// Cortar la imagen en 9 piezas
+// Cortar la imagen - VERSIÓN CORREGIDA PARA GITHUB
 function cortarImagen() {
     return new Promise((resolve, reject) => {
         const img = new Image();
-        img.src = RUTA_FOTO + '?t=' + new Date().getTime(); // Cache busting
+        
+        // IMPORTANTE: Forzar que no use caché
+        img.src = RUTA_FOTO + '?t=' + Date.now();
+        
+        img.crossOrigin = 'Anonymous'; // Para evitar CORS
         
         img.onload = function() {
+            console.log('✅ Imagen cargada exitosamente');
+            
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             
-            // Hacer la imagen cuadrada para mejor experiencia
+            // Hacer la imagen cuadrada
             const size = Math.min(img.width, img.height);
             const startX = (img.width - size) / 2;
             const startY = (img.height - size) / 2;
@@ -82,29 +93,151 @@ function cortarImagen() {
             resolve(piezas);
         };
         
-        img.onerror = function() {
-            reject('Error al cargar la imagen');
+        img.onerror = function(error) {
+            console.error('❌ Error al cargar la imagen:', error);
+            console.log('Ruta intentada:', RUTA_FOTO);
+            
+            // Crear piezas de respaldo con números
+            const piezasRespaldo = [];
+            for (let i = 0; i < 9; i++) {
+                const canvas = document.createElement('canvas');
+                canvas.width = 200;
+                canvas.height = 200;
+                const ctx = canvas.getContext('2d');
+                
+                // Fondo rosa
+                ctx.fillStyle = '#ff6b8b';
+                ctx.fillRect(0, 0, 200, 200);
+                
+                // Número grande
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 80px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(i + 1, 100, 100);
+                
+                piezasRespaldo.push({
+                    id: i + 1,
+                    row: Math.floor(i / 3),
+                    col: i % 3,
+                    position: i,
+                    dataUrl: canvas.toDataURL('image/jpeg', 0.95)
+                });
+            }
+            
+            alert('⚠️ No pude cargar la foto. Asegúrate de que:\n\n1. La foto esté en: assets/1.jpg\n2. El nombre sea exactamente "1.jpg"\n3. Hayas hecho "git add ." y "git commit"\n\nPor ahora usaremos piezas de respaldo.');
+            
+            resolve(piezasRespaldo);
         };
     });
 }
 
-// Mostrar frase de amor aleatoria
 function mostrarFraseAmor() {
     const messageText = document.getElementById('messageText');
     const fraseAleatoria = frasesAmor[Math.floor(Math.random() * frasesAmor.length)];
     messageText.textContent = fraseAleatoria;
     
-    // Animación
     const loveMessage = document.querySelector('.love-message');
     loveMessage.style.animation = 'none';
     loveMessage.offsetHeight;
     loveMessage.style.animation = 'heartbeat 1s ease';
     
-    // También mostrar toast en móvil
     if (window.innerWidth <= 900) {
         mostrarToast(fraseAleatoria);
     }
 }
+
+// ========== SISTEMA DE ARRASTRE TÁCTIL ==========
+function iniciarArrastre(e, piezaElement, pieceId) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (piezaElement.classList.contains('placed')) {
+        return;
+    }
+    
+    piezaSeleccionada = pieceId;
+    piezaOriginal = piezaElement;
+    
+    const clon = piezaElement.cloneNode(true);
+    clon.id = 'pieza-flotante';
+    clon.style.position = 'fixed';
+    clon.style.width = piezaElement.offsetWidth + 'px';
+    clon.style.height = piezaElement.offsetHeight + 'px';
+    clon.style.zIndex = '9999';
+    clon.style.opacity = '0.9';
+    clon.style.transform = 'scale(1.1)';
+    clon.style.pointerEvents = 'none';
+    clon.style.boxShadow = '0 10px 30px rgba(255, 59, 111, 0.5)';
+    
+    document.body.appendChild(clon);
+    
+    let touch = e.touches ? e.touches[0] : e;
+    touchOffsetX = touch.clientX - piezaElement.getBoundingClientRect().left;
+    touchOffsetY = touch.clientY - piezaElement.getBoundingClientRect().top;
+    
+    clon.style.left = (touch.clientX - touchOffsetX) + 'px';
+    clon.style.top = (touch.clientY - touchOffsetY) + 'px';
+    
+    piezaElement.style.opacity = '0.3';
+    
+    document.querySelectorAll('.empty-slot').forEach(slot => {
+        slot.style.border = '3px dashed #ff3b6f';
+        slot.style.backgroundColor = 'rgba(255, 107, 139, 0.1)';
+    });
+}
+
+function moverArrastre(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!piezaSeleccionada) return;
+    
+    const clon = document.getElementById('pieza-flotante');
+    if (clon) {
+        let touch = e.touches ? e.touches[0] : e;
+        clon.style.left = (touch.clientX - touchOffsetX) + 'px';
+        clon.style.top = (touch.clientY - touchOffsetY) + 'px';
+    }
+}
+
+function terminarArrastre(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!piezaSeleccionada || !piezaOriginal) return;
+    
+    const clon = document.getElementById('pieza-flotante');
+    if (clon) clon.remove();
+    
+    piezaOriginal.style.opacity = '1';
+    
+    document.querySelectorAll('.empty-slot').forEach(slot => {
+        slot.style.border = '2px dashed #ff99aa';
+        slot.style.backgroundColor = 'rgba(255, 220, 230, 0.7)';
+    });
+    
+    let touch = e.changedTouches ? e.changedTouches[0] : e;
+    let elementoDebajo = document.elementFromPoint(touch.clientX, touch.clientY);
+    
+    let slotEncontrado = null;
+    while (elementoDebajo) {
+        if (elementoDebajo.classList && elementoDebajo.classList.contains('empty-slot')) {
+            slotEncontrado = elementoDebajo;
+            break;
+        }
+        elementoDebajo = elementoDebajo.parentElement;
+    }
+    
+    if (slotEncontrado) {
+        const position = parseInt(slotEncontrado.dataset.position);
+        colocarPieza(piezaSeleccionada, position, slotEncontrado);
+    }
+    
+    piezaSeleccionada = null;
+    piezaOriginal = null;
+}
+// ========== FIN SISTEMA DE ARRASTRE ==========
 
 // Inicializar juego
 async function inicializarPuzzle() {
@@ -114,97 +247,77 @@ async function inicializarPuzzle() {
     puzzleBoard.innerHTML = '';
     piecesContainer.innerHTML = '';
     
-    // Resetear estado
     piezasColocadas = new Array(9).fill(false);
     document.getElementById('finalQuestion').classList.remove('show');
+    document.getElementById('messageText').textContent = '💝 Toca y arrastra las piezas para armarlo';
     
-    // Mensaje inicial
-    document.getElementById('messageText').textContent = '💝 Coloca una pieza para ver un mensaje de amor';
-    
-    // Crear espacios vacíos en el tablero
+    // Crear espacios vacíos
     for (let i = 0; i < 9; i++) {
         const slot = document.createElement('div');
         slot.className = 'empty-slot';
         slot.dataset.position = i;
         slot.textContent = '✨';
         
-        // Eventos drag & drop
-        slot.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            slot.classList.add('drop-zone');
-        });
-        
-        slot.addEventListener('dragleave', () => {
-            slot.classList.remove('drop-zone');
-        });
-        
-        slot.addEventListener('drop', (e) => {
-            e.preventDefault();
-            slot.classList.remove('drop-zone');
-            
-            const pieceId = e.dataTransfer.getData('text/plain');
-            const position = parseInt(slot.dataset.position);
-            
-            colocarPieza(pieceId, position, slot);
-        });
-        
-        // Para móvil: toque largo o doble toque
-        slot.addEventListener('touchstart', (e) => {
-            // Prevenir scroll
-            e.preventDefault();
-        });
+        slot.addEventListener('touchstart', (e) => e.preventDefault());
+        slot.addEventListener('touchmove', (e) => e.preventDefault());
         
         puzzleBoard.appendChild(slot);
     }
     
     try {
-        // Cortar la imagen
         piezasData = await cortarImagen();
-        
-        // Mezclar piezas
         const piezasMezcladas = [...piezasData].sort(() => Math.random() - 0.5);
         
-        // Crear las piezas arrastrables
         piezasMezcladas.forEach((pieza) => {
             const pieceDiv = document.createElement('div');
             pieceDiv.className = 'puzzle-piece';
-            pieceDiv.draggable = true;
             pieceDiv.dataset.pieceId = pieza.id;
             pieceDiv.dataset.position = pieza.position;
             
             const img = document.createElement('img');
             img.src = pieza.dataUrl;
             img.alt = `Pieza ${pieza.id}`;
-            
             pieceDiv.appendChild(img);
             
-            // Eventos de drag
-            pieceDiv.addEventListener('dragstart', (e) => {
-                e.dataTransfer.setData('text/plain', pieza.id);
-                pieceDiv.classList.add('dragging');
-            });
-            
-            pieceDiv.addEventListener('dragend', () => {
-                pieceDiv.classList.remove('dragging');
-            });
-            
-            // Para móvil: mejor soporte táctil
+            // Eventos táctiles
             pieceDiv.addEventListener('touchstart', (e) => {
                 e.preventDefault();
-                // Guardar referencia para el drop
-                window.draggedPiece = {
-                    id: pieza.id,
-                    element: pieceDiv
-                };
-                pieceDiv.classList.add('dragging');
-            });
+                iniciarArrastre(e, pieceDiv, pieza.id);
+            }, { passive: false });
             
             pieceDiv.addEventListener('touchmove', (e) => {
                 e.preventDefault();
-            });
+                moverArrastre(e);
+            }, { passive: false });
             
             pieceDiv.addEventListener('touchend', (e) => {
-                pieceDiv.classList.remove('dragging');
+                e.preventDefault();
+                terminarArrastre(e);
+            }, { passive: false });
+            
+            pieceDiv.addEventListener('touchcancel', (e) => {
+                e.preventDefault();
+                terminarArrastre(e);
+            }, { passive: false });
+            
+            // Eventos de mouse
+            pieceDiv.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                iniciarArrastre(e, pieceDiv, pieza.id);
+            });
+            
+            document.addEventListener('mousemove', (e) => {
+                if (piezaSeleccionada) {
+                    e.preventDefault();
+                    moverArrastre(e);
+                }
+            });
+            
+            document.addEventListener('mouseup', (e) => {
+                if (piezaSeleccionada) {
+                    e.preventDefault();
+                    terminarArrastre(e);
+                }
             });
             
             piecesContainer.appendChild(pieceDiv);
@@ -214,51 +327,29 @@ async function inicializarPuzzle() {
         
     } catch (error) {
         console.error('Error:', error);
-        piecesContainer.innerHTML = '<p style="color: red; text-align: center; padding: 20px;">❌ No encontré la foto "1.jpg".<br><br>📸 Asegúrate de que esté en la misma carpeta.</p>';
     }
 }
 
-// Colocar pieza en el tablero
 function colocarPieza(pieceId, position, slotElement) {
-    // Verificar si ya hay una pieza en esa posición
     if (piezasColocadas[position]) {
-        if (window.innerWidth <= 900) {
-            mostrarToast('💝 Esta posición ya tiene una pieza');
-        } else {
-            alert('💝 Esta posición ya tiene una pieza');
-        }
+        mostrarToast('💝 Esta posición ya tiene una pieza');
         return;
     }
     
-    // Buscar la pieza en el contenedor de piezas disponibles
     const piezaElement = document.querySelector(`[data-piece-id="${pieceId}"]`);
-    
     if (!piezaElement) {
-        if (window.innerWidth <= 900) {
-            mostrarToast('💝 Esta pieza ya fue colocada');
-        } else {
-            alert('💝 Esta pieza ya fue colocada');
-        }
+        mostrarToast('💝 Esta pieza ya fue colocada');
         return;
     }
     
-    // Buscar los datos de la pieza
     const piezaData = piezasData.find(p => p.id == pieceId);
-    
-    // Verificar que la pieza corresponda a esta posición
     if (piezaData.position !== position) {
-        if (window.innerWidth <= 900) {
-            mostrarToast('✨ Esta pieza no va aquí, mira la foto completa');
-        } else {
-            alert(`✨ Esta pieza no va aquí. Mira la foto completa para saber dónde va.`);
-        }
+        mostrarToast('✨ Esta pieza no va aquí, mira la foto completa');
         return;
     }
     
-    // Marcar como colocada
     piezasColocadas[position] = true;
     
-    // Crear la pieza colocada
     const piecePlaced = document.createElement('div');
     piecePlaced.className = 'piece-placed';
     
@@ -268,24 +359,19 @@ function colocarPieza(pieceId, position, slotElement) {
     
     piecePlaced.appendChild(img);
     
-    // Reemplazar el slot vacío con la pieza colocada
     slotElement.innerHTML = '';
     slotElement.className = 'piece-placed';
     slotElement.appendChild(img);
     slotElement.dataset.position = position;
     
-    // Eliminar la pieza del contenedor de disponibles
     piezaElement.remove();
     
-    // MOSTRAR FRASE DE AMOR 🎉
     mostrarFraseAmor();
     
-    // Vibración en móvil
     if (navigator.vibrate) {
         navigator.vibrate(50);
     }
     
-    // Mini confeti por pieza colocada
     confetti({
         particleCount: 10,
         spread: 30,
@@ -295,27 +381,21 @@ function colocarPieza(pieceId, position, slotElement) {
     
     actualizarContador();
     
-    // Verificar si completó
     if (piezasColocadas.every(p => p === true)) {
         completarPuzzle();
     }
 }
 
-// Actualizar contador
 function actualizarContador() {
     const colocadas = piezasColocadas.filter(p => p).length;
     document.getElementById('piecesPlaced').textContent = colocadas;
     document.getElementById('progressFill').style.width = (colocadas / 9 * 100) + '%';
 }
 
-// Completar puzzle
 function completarPuzzle() {
     document.getElementById('finalQuestion').classList.add('show');
-    
-    // Mostrar frase especial al completar
     document.getElementById('messageText').textContent = '💖 ¡COMPLETASTE EL ROMPECABEZAS! 💖 Eres la pieza que faltaba en mi vida.';
     
-    // Confeti grande
     for (let i = 0; i < 3; i++) {
         setTimeout(() => {
             confetti({
@@ -328,10 +408,8 @@ function completarPuzzle() {
     }
 }
 
-// Reiniciar
 function reiniciarPuzzle() {
     inicializarPuzzle();
-    
     confetti({
         particleCount: 30,
         spread: 50,
@@ -340,9 +418,7 @@ function reiniciarPuzzle() {
     });
 }
 
-// Celebrar
 function celebrar() {
-    // Confeti masivo
     for (let i = 0; i < 8; i++) {
         setTimeout(() => {
             confetti({
@@ -354,25 +430,19 @@ function celebrar() {
         }, i * 100);
     }
     
-    // Mensaje final
     setTimeout(() => {
-        if (window.innerWidth <= 900) {
-            mostrarToast('💖 ¡TE AMO! 💖 Gracias por ser mi San Valentín');
-        } else {
-            alert('💖 ¡SÍ ACEPTO! 💖\n\nGracias por ser mi San Valentín. Te amo muchísimo.');
-        }
+        mostrarToast('💖 ¡TE AMO! 💖 Gracias por ser mi San Valentín');
     }, 500);
     
     const btn = document.querySelector('.heart-btn');
     btn.textContent = '¡TE AMO! ❤️';
 }
 
-// Soporte para móvil - Drag & Drop táctil
+// Prevenir scroll global
 document.addEventListener('touchmove', (e) => {
-    if (e.target.classList.contains('puzzle-piece')) {
+    if (piezaSeleccionada) {
         e.preventDefault();
     }
 }, { passive: false });
 
-// Iniciar cuando cargue
 window.onload = inicializarPuzzle;
