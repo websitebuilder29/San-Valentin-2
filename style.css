@@ -1,0 +1,466 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    background: linear-gradient(145deg, #ff758c 0%, #ff7eb3 100%);
+    font-family: 'Poppins', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 12px;
+}
+
+.container {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 35px;
+    box-shadow: 0 20px 40px rgba(255, 75, 100, 0.25);
+    padding: 20px;
+    max-width: 1400px;
+    width: 100%;
+}
+
+h1 {
+    text-align: center;
+    color: #ff3b6f;
+    font-size: 2.2em;
+    margin-bottom: 20px;
+    font-family: 'Dancing Script', cursive;
+    text-shadow: 2px 2px 0 #ffe0e5;
+}
+
+/* Grid principal - responsive */
+.puzzle-section {
+    display: grid;
+    grid-template-columns: 1fr 0.9fr 0.9fr;
+    gap: 20px;
+}
+
+/* Columnas */
+.puzzle-col, .pieces-col, .reference-col {
+    background: rgba(255, 245, 247, 0.7);
+    border-radius: 25px;
+    padding: 18px;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.section-title {
+    color: #ff3b6f;
+    font-size: 1.1em;
+    margin-bottom: 15px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-title span {
+    background: white;
+    padding: 5px 15px;
+    border-radius: 50px;
+    box-shadow: 0 5px 15px rgba(255, 99, 132, 0.2);
+}
+
+/* Tablero del rompecabezas */
+.puzzle-board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    aspect-ratio: 1;
+    background: #ffd9e0;
+    border: 3px solid white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 20px rgba(255, 75, 100, 0.2);
+}
+
+/* Espacios vacíos */
+.empty-slot {
+    background: rgba(255, 220, 230, 0.7);
+    border: 2px dashed #ff99aa;
+    aspect-ratio: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #ff6b8b;
+    font-size: 1.8em;
+    transition: 0.2s;
+}
+
+.empty-slot.drop-zone {
+    background: rgba(255, 107, 139, 0.2);
+    border: 3px solid #ff3b6f;
+    transform: scale(0.98);
+}
+
+/* Piezas colocadas */
+.piece-placed {
+    width: 100%;
+    height: 100%;
+    border: 1px solid white;
+    overflow: hidden;
+    animation: placePiece 0.3s ease;
+}
+
+@keyframes placePiece {
+    0% { transform: scale(0.8); opacity: 0.5; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.piece-placed img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Contenedor de piezas disponibles */
+.pieces-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    background: #ffe2e9;
+    padding: 15px;
+    border-radius: 20px;
+    aspect-ratio: 1;
+    margin-bottom: 15px;
+}
+
+/* Piezas para arrastrar */
+.puzzle-piece {
+    aspect-ratio: 1;
+    background: white;
+    border-radius: 12px;
+    cursor: grab;
+    overflow: hidden;
+    border: 3px solid white;
+    box-shadow: 0 8px 15px rgba(255, 99, 132, 0.3);
+    transition: 0.2s;
+}
+
+.puzzle-piece:active {
+    cursor: grabbing;
+    transform: scale(0.92);
+    box-shadow: 0 4px 10px rgba(255, 60, 100, 0.5);
+}
+
+.puzzle-piece.dragging {
+    opacity: 0.6;
+    transform: scale(0.9);
+}
+
+.puzzle-piece img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    pointer-events: none;
+}
+
+/* Mensaje de amor */
+.love-message {
+    background: linear-gradient(145deg, #fff0f3, #ffe4e9);
+    border-radius: 20px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 2px solid white;
+    box-shadow: 0 5px 15px rgba(255, 105, 180, 0.2);
+    min-height: 80px;
+}
+
+.message-icon {
+    font-size: 2.2em;
+    animation: heartbeat 1.5s ease infinite;
+}
+
+@keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.message-text {
+    color: #4a4a4a;
+    font-size: 0.95em;
+    line-height: 1.4;
+    flex: 1;
+    font-weight: 500;
+}
+
+/* Foto de referencia */
+.photo-frame {
+    width: 100%;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 20px rgba(255, 75, 100, 0.2);
+    border: 4px solid white;
+    aspect-ratio: 1;
+    margin-bottom: 15px;
+}
+
+.photo-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Progreso móvil (visible solo en móvil) */
+.progress-mobile {
+    margin-top: 15px;
+    display: none;
+}
+
+/* Barra de progreso */
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #ffe2e9;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 5px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff6b8b, #ff3b6f);
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.counter {
+    color: #ff6b8b;
+    font-weight: 600;
+    font-size: 0.95em;
+}
+
+/* Pregunta final */
+.final-question {
+    background: linear-gradient(145deg, #ff3b6f, #ff6b8b);
+    border-radius: 20px;
+    padding: 20px;
+    color: white;
+    text-align: center;
+    margin-top: 10px;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: 0.4s;
+    display: none;
+}
+
+.final-question.show {
+    display: block;
+    opacity: 1;
+    transform: scale(1);
+    animation: bounce 0.5s ease;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.final-question h2 {
+    font-family: 'Dancing Script', cursive;
+    font-size: 1.8em;
+    margin-bottom: 15px;
+}
+
+.heart-btn {
+    background: white;
+    color: #ff3b6f;
+    border: none;
+    padding: 12px 30px;
+    font-size: 1.2em;
+    border-radius: 50px;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 4px 0 #d6304a;
+    width: 100%;
+    max-width: 250px;
+    margin-bottom: 10px;
+    transition: 0.1s;
+}
+
+.heart-btn:active {
+    transform: translateY(4px);
+    box-shadow: 0 0px 0 #d6304a;
+}
+
+.reset-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid white;
+    padding: 8px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: 0.2s;
+}
+
+.reset-btn:active {
+    background: white;
+    color: #ff3b6f;
+}
+
+/* Toast notification para móvil */
+.toast-notification {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: rgba(255, 59, 111, 0.95);
+    backdrop-filter: blur(10px);
+    color: white;
+    padding: 15px 25px;
+    border-radius: 50px;
+    font-size: 1em;
+    font-weight: 500;
+    box-shadow: 0 10px 30px rgba(255, 59, 111, 0.4);
+    z-index: 1000;
+    opacity: 0;
+    transition: 0.3s;
+    border: 2px solid white;
+    max-width: 90%;
+    text-align: center;
+}
+
+.toast-notification.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+/* ========== RESPONSIVE PARA CELULAR ========== */
+@media (max-width: 900px) {
+    body {
+        padding: 8px;
+    }
+    
+    .container {
+        padding: 15px;
+    }
+    
+    h1 {
+        font-size: 1.8em;
+        margin-bottom: 15px;
+    }
+    
+    .puzzle-section {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .puzzle-col, .pieces-col, .reference-col {
+        padding: 15px;
+    }
+    
+    /* Ocultar contador desktop y mostrar móvil */
+    .progress-mobile {
+        display: block;
+    }
+    
+    /* Ajustar tamaños */
+    .puzzle-board {
+        max-width: 100%;
+        margin: 0 auto;
+    }
+    
+    .pieces-container {
+        aspect-ratio: 1;
+        max-width: 100%;
+        margin: 0 auto 15px auto;
+    }
+    
+    .photo-frame {
+        max-width: 80%;
+        margin: 0 auto 15px auto;
+    }
+    
+    .love-message {
+        min-height: 70px;
+    }
+    
+    .message-icon {
+        font-size: 1.8em;
+    }
+    
+    .message-text {
+        font-size: 0.9em;
+    }
+    
+    .final-question h2 {
+        font-size: 1.6em;
+    }
+    
+    .heart-btn {
+        padding: 10px 25px;
+        font-size: 1.1em;
+    }
+}
+
+/* Para celulares muy pequeños */
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.5em;
+    }
+    
+    .photo-frame {
+        max-width: 100%;
+    }
+    
+    .love-message {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .message-icon {
+        font-size: 1.6em;
+    }
+}
+
+/* Estilos para el arrastre táctil */
+#pieza-flotante {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    transition: none;
+    border: 3px solid white;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(255, 59, 111, 0.5);
+}
+
+.puzzle-piece {
+    touch-action: none; /* Previene scroll mientras arrastra */
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.empty-slot {
+    touch-action: none;
+    transition: all 0.2s;
+}
+
+/* Feedback visual al arrastrar */
+.puzzle-piece:active {
+    transform: scale(0.95);
+}
+
+/* Mejoras para móvil */
+@media (max-width: 900px) {
+    .puzzle-piece {
+        cursor: grab;
+        touch-action: pan-y; /* Permite scroll vertical fuera de las piezas */
+    }
+    
+    .empty-slot {
+        min-height: 80px;
+        min-width: 80px;
+    }
+}

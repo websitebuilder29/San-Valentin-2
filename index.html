@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>🧩 Rompecabezas de Amor | San Valentín</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1>🧩 Arma nuestro rompecabezas</h1>
+        
+        <div class="puzzle-section">
+            <!-- Columna 1: Rompecabezas -->
+            <div class="puzzle-col">
+                <div class="section-title">
+                    <span>🧩 Arma aquí</span>
+                </div>
+                <div class="puzzle-board" id="puzzleBoard"></div>
+                
+                <!-- Barra de progreso móvil -->
+                <div class="progress-mobile">
+                    <div class="counter">Piezas: <span id="piecesPlaced">0</span>/9</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Columna 2: Piezas y frases -->
+            <div class="pieces-col">
+                <div class="section-title">
+                    <span>🔄 Arrástrame</span>
+                </div>
+                
+                <!-- Piezas disponibles -->
+                <div class="pieces-container" id="piecesContainer"></div>
+                
+                <!-- Mensaje de amor (aparece al colocar pieza) -->
+                <div class="love-message" id="loveMessage">
+                    <div class="message-icon">💝</div>
+                    <div class="message-text" id="messageText">
+                        Coloca una pieza para ver un mensaje
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Columna 3: Referencia y pregunta -->
+            <div class="reference-col">
+                <div class="section-title">
+                    <span>📸 Foto completa</span>
+                </div>
+                <div class="photo-frame">
+                    <img src="1.jpg" alt="Nosotros" id="referenceImg">
+                </div>
+                
+                <!-- Pregunta final -->
+                <div class="final-question" id="finalQuestion">
+                    <h2>💘 ¿Quieres ser mi San Valentín? 💘</h2>
+                    <button class="heart-btn" onclick="celebrar()">
+                        ¡SÍ! ❤️
+                    </button>
+                    <button class="reset-btn" onclick="reiniciarPuzzle()">
+                        🔄 Reiniciar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast para frases en móvil -->
+    <div class="toast-notification" id="toastNotification">
+        <span id="toastMessage"></span>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
+    <script src="script.js"></script>
+</body>
+</html>
